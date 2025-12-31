@@ -77,9 +77,9 @@ local Config = {
     ElasticSpeed = 1.6,
     ElasticCenterSpeed = 0.34,
     ElasticCorrection = 0.1,
-    ESPOutlineColor = Color3.fromRGB(157, 0, 0),
-    ESPGradientColor = Color3.fromRGB(157, 0, 0),
-    ChamsColor = Color3.fromRGB(157, 0, 0),
+    ESPOutlineColor = Color3.fromRGB(0, 255, 100),
+    ESPGradientColor = Color3.fromRGB(0, 255, 100),
+    ChamsColor = Color3.fromRGB(0, 255, 100),
     ChamsTransparency = 0.5,
     SelectedHitsound = "rbxassetid://6916371803",
     HitsoundVolume = 5,
@@ -109,7 +109,7 @@ local Config = {
 -- ═══════════════════════════════════════════════════════════════
 local fovCircle = Drawing.new("Circle")
 fovCircle.Thickness = 2
-fovCircle.Color = Color3.new(1, 1, 1)
+fovCircle.Color = Color3.fromRGB(0, 255, 100)
 fovCircle.Transparency = 0.5
 fovCircle.Filled = false
 fovCircle.Radius = Config.FOVRadius
@@ -608,12 +608,12 @@ MiscLeft:AddToggle("enableFOVLock", {Text = "Enable FOV Changer", Default = fals
 MiscLeft:AddSlider("Field Of View", {Text = "Additional FOV", Default = 10, Min = 1, Max = 120, Rounding = 0, Callback = function(v) Config.AdditionalFOV = v end})
 
 -- Visual Settings
-MiscRight:AddLabel("FOV Circle Color"):AddColorPicker("fovCircleColor", {Default = Color3.fromRGB(157, 0, 0), Callback = function(v) fovCircle.Color = v end})
-MiscRight:AddLabel("Chams Color"):AddColorPicker("colorForChams", {Default = Color3.fromRGB(157, 0, 0), Callback = function(v) Config.ChamsColor = v end})
+MiscRight:AddLabel("FOV Circle Color"):AddColorPicker("fovCircleColor", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) fovCircle.Color = v end})
+MiscRight:AddLabel("Chams Color"):AddColorPicker("colorForChams", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) Config.ChamsColor = v end})
 MiscRight:AddToggle("enableLight", {Text = "Toggle Fullbright", Default = false, Callback = function(v) State.fullbrightEnabled = v end})
 MiscRight:AddLabel("Lighting Color"):AddColorPicker("lightColor", {Default = Color3.new(1, 1, 1), Callback = function(v) Config.FullbrightColor = v end})
 MiscRight:AddToggle("NoShadows", {Text = "Remove Shadows", Default = false, Callback = function(v) Lighting.GlobalShadows = not v end})
-MiscRight:AddLabel("ESP Box Color"):AddColorPicker("boxColor", {Default = Color3.fromRGB(157, 0, 0), Callback = function(v) Config.ESPOutlineColor = v end})
+MiscRight:AddLabel("ESP Box Color"):AddColorPicker("boxColor", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) Config.ESPOutlineColor = v end})
 MiscRight:AddSlider("chamsTransparency", {Text = "Chams Transparency", Default = 0.5, Min = 0.01, Max = 1, Rounding = 2, Callback = function(v) Config.ChamsTransparency = v end})
 MiscRight:AddToggle("FpsBoost", {Text = "FPS Boost", Default = false, Callback = function(v)
     if v then
