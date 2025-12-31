@@ -1,15 +1,11 @@
 --[[
     ╔═══════════════════════════════════════════════════════════════╗
     ║                    CHEAT UNIVERSAL                            ║
-    ║              Clean & Customizable Version                     ║
+    ║              Русская версия + Жирные функции                  ║
     ╚═══════════════════════════════════════════════════════════════╝
-    
-    Usage: loadstring(game:HttpGet('YOUR_RAW_URL/cheat.lua'))()
 ]]
 
--- ═══════════════════════════════════════════════════════════════
--- SERVICES
--- ═══════════════════════════════════════════════════════════════
+-- СЕРВИСЫ
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -19,94 +15,53 @@ local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 local Mouse = LocalPlayer:GetMouse()
 
--- ═══════════════════════════════════════════════════════════════
--- NOTIFICATION
--- ═══════════════════════════════════════════════════════════════
-StarterGui:SetCore("SendNotification", {
-    Title = "Cheat Activated!",
-    Text = "Clean Version Loaded",
-    Duration = 5
-})
+StarterGui:SetCore("SendNotification", {Title = "Cheat", Text = "Загрузка...", Duration = 3})
 
--- ═══════════════════════════════════════════════════════════════
--- STATE
--- ═══════════════════════════════════════════════════════════════
+-- СОСТОЯНИЕ
 local State = {
-    isAiming = false,
-    currentTarget = nil,
-    lastTargetHealth = nil,
-    flickActive = false,
-    lastUpdateTime = 0,
-    targetUpdateInterval = 0.1,
-    espEnabled = false,
-    chamsEnabled = false,
-    crateESPEnabled = false,
-    inventoryViewerEnabled = false,
-    triggerbotEnabled = false,
-    wallCheckDisabled = false,
-    dynamicFOVEnabled = false,
-    fullbrightEnabled = false,
-    fovChangerEnabled = false,
-    hitsoundsEnabled = false,
-    lockpickerEnabled = false,
-    lockpickerRunning = false,
-    killSayEnabled = false
+    isAiming = false, currentTarget = nil, lastTargetHealth = nil, flickActive = false,
+    lastUpdateTime = 0, targetUpdateInterval = 0.1, espEnabled = false, chamsEnabled = false,
+    triggerbotEnabled = false, wallCheckDisabled = false, dynamicFOVEnabled = false,
+    fullbrightEnabled = false, fovChangerEnabled = false, hitsoundsEnabled = false,
+    lockpickerEnabled = false, lockpickerRunning = false, killSayEnabled = false,
+    infiniteJumpEnabled = false, noclipEnabled = false, speedEnabled = false,
+    flyEnabled = false, antiAFKEnabled = false, noFallDamageEnabled = false,
+    spinbotEnabled = false, fakelagEnabled = false, silentAimEnabled = false,
+    autoParryEnabled = false, hitboxExpanderEnabled = false, ragdollEnabled = false,
+    godModeEnabled = false, invisibleEnabled = false, bhopping = false
 }
 
--- ═══════════════════════════════════════════════════════════════
--- CONFIG
--- ═══════════════════════════════════════════════════════════════
+-- КОНФИГ
 local Config = {
-    Smoothness = 80,
-    FOVRadius = 200,
-    Prediction = 0.1,
+    Smoothness = 80, FOVRadius = 200, Prediction = 0.1,
     ActivationKey = Enum.UserInputType.MouseButton2,
-    TargetParts = {"Head", "UpperTorso"},
-    TeamCheck = false,
-    HumanizationEnabled = false,
-    HumanizationSpeed = 0.19,
-    RandomOffset = 1,
-    DriftIntensity = 1,
-    AimJitter = 0.3,
-    ElasticEnabled = false,
-    ElasticSpeed = 1.6,
-    ElasticCenterSpeed = 0.34,
-    ElasticCorrection = 0.1,
-    ESPOutlineColor = Color3.fromRGB(0, 255, 100),
-    ESPGradientColor = Color3.fromRGB(0, 255, 100),
-    ChamsColor = Color3.fromRGB(0, 255, 100),
-    ChamsTransparency = 0.5,
-    SelectedHitsound = "rbxassetid://6916371803",
-    HitsoundVolume = 5,
-    FullbrightColor = Color3.new(1, 1, 1),
-    AdditionalFOV = 10,
-    KillSayDelay = 1.5,
-    KillSayThreshold = 20,
-    KillSayMessages = {
-        "GG EZ", "Better luck next time!", "Nice try!", "Get good!", 
-        "Too easy!", "You tried...", "Skill issue!", "Outplayed!"
-    },
+    TargetParts = {"Head", "UpperTorso"}, TeamCheck = false,
+    HumanizationEnabled = false, HumanizationSpeed = 0.19,
+    RandomOffset = 1, DriftIntensity = 1, AimJitter = 0.3,
+    ElasticEnabled = false, ElasticSpeed = 1.6, ElasticCenterSpeed = 0.34, ElasticCorrection = 0.1,
+    ESPOutlineColor = Color3.fromRGB(0, 255, 100), ESPGradientColor = Color3.fromRGB(0, 255, 100),
+    ChamsColor = Color3.fromRGB(0, 255, 100), ChamsTransparency = 0.5,
+    SelectedHitsound = "rbxassetid://6916371803", HitsoundVolume = 5,
+    FullbrightColor = Color3.new(1, 1, 1), AdditionalFOV = 10,
+    KillSayDelay = 1.5, KillSayThreshold = 20,
+    KillSayMessages = {"GG EZ", "Удачи в следующий раз!", "Попробуй ещё!", "Скилл иссуе!", "Слишком легко!"},
     Hitsounds = {
-        Slime = "rbxassetid://6916371803",
-        Fortnite = "rbxassetid://4804954860",
-        Pan = "rbxassetid://7109756845",
-        Quake = "rbxassetid://1455817260",
-        Boing = "rbxassetid://12222124",
-        Neverlose = "rbxassetid://6607204501",
-        Wood = "rbxassetid://9120903221",
-        Minecraft = "rbxassetid://8766809464",
-        Rust = "rbxassetid://4764109000"
-    }
+        Slime = "rbxassetid://6916371803", Fortnite = "rbxassetid://4804954860",
+        Pan = "rbxassetid://7109756845", Quake = "rbxassetid://1455817260",
+        Boing = "rbxassetid://12222124", Neverlose = "rbxassetid://6607204501",
+        Wood = "rbxassetid://9120903221", Minecraft = "rbxassetid://8766809464", Rust = "rbxassetid://4764109000"
+    },
+    WalkSpeed = 16, JumpPower = 50, FlySpeed = 50, HitboxSize = 10, SpinSpeed = 50
 }
 
--- ═══════════════════════════════════════════════════════════════
--- FOV CIRCLE
--- ═══════════════════════════════════════════════════════════════
+-- FOV КРУГ
 local fovCircle = Drawing.new("Circle")
 fovCircle.Thickness = 2
 fovCircle.Color = Color3.fromRGB(0, 255, 100)
@@ -121,9 +76,7 @@ local function updateFOVCircle()
     fovCircle.Radius = Config.FOVRadius
 end
 
--- ═══════════════════════════════════════════════════════════════
--- UTILITIES
--- ═══════════════════════════════════════════════════════════════
+-- УТИЛИТЫ
 local function isEnemy(player)
     if not Config.TeamCheck then return true end
     return player.Team ~= LocalPlayer.Team
@@ -139,10 +92,7 @@ local function getClosestBodyPart(player)
             local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
             if onScreen then
                 local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-                if distance < closestDistance then
-                    closestDistance = distance
-                    closestPart = part
-                end
+                if distance < closestDistance then closestDistance = distance; closestPart = part end
             end
         end
     end
@@ -172,8 +122,7 @@ local function getClosestPlayer(fovRadius)
                 if onScreen then
                     local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
                     if distance <= fovRadius and distance < closestDistance and isVisible(player, targetPart) then
-                        closestDistance = distance
-                        closestPlayer = player
+                        closestDistance = distance; closestPlayer = player
                     end
                 end
             end
@@ -190,9 +139,7 @@ local function predictPosition(player, predictionTime)
     return targetPart.Position + (velocity * predictionTime)
 end
 
--- ═══════════════════════════════════════════════════════════════
 -- HUMANIZATION & ELASTIC
--- ═══════════════════════════════════════════════════════════════
 local function applyHumanization(deltaX, deltaY, distance)
     if not Config.HumanizationEnabled then return deltaX, deltaY end
     deltaX = deltaX + math.random(-Config.RandomOffset, Config.RandomOffset)
@@ -200,8 +147,6 @@ local function applyHumanization(deltaX, deltaY, distance)
     local shakeX = math.sin(tick() * 5) * Config.DriftIntensity
     local shakeY = math.cos(tick() * 5) * Config.DriftIntensity
     deltaX, deltaY = deltaX + shakeX, deltaY + shakeY
-    deltaX = deltaX + (deltaX * Config.AimJitter * math.random(-1, 1))
-    deltaY = deltaY + (deltaY * Config.AimJitter * math.random(-1, 1))
     local smoothFactor = math.clamp(1 / (distance / 500), 0.2, 1)
     return deltaX * Config.HumanizationSpeed * smoothFactor, deltaY * Config.HumanizationSpeed * smoothFactor
 end
@@ -213,14 +158,11 @@ local function applyElastic(deltaX, deltaY)
         State.flickActive = true
     else
         deltaX, deltaY = deltaX * Config.ElasticCenterSpeed, deltaY * Config.ElasticCenterSpeed
-        deltaX, deltaY = deltaX - (deltaX * Config.ElasticCorrection), deltaY - (deltaY * Config.ElasticCorrection)
     end
     return deltaX, deltaY
 end
 
--- ═══════════════════════════════════════════════════════════════
 -- AIMBOT
--- ═══════════════════════════════════════════════════════════════
 local function aimAt(targetPosition)
     local screenPos = Camera:WorldToViewportPoint(targetPosition)
     local mousePos = UserInputService:GetMouseLocation()
@@ -232,19 +174,7 @@ local function aimAt(targetPosition)
     if getfenv().mousemoverel then getfenv().mousemoverel(deltaX, deltaY) end
 end
 
-local function updateDynamicFOV()
-    if not State.dynamicFOVEnabled then return end
-    local target = getClosestPlayer(math.huge)
-    if target and target.Character then
-        local distance = (Camera.CFrame.Position - target.Character:GetModelCFrame().Position).Magnitude
-        Config.FOVRadius = math.clamp(600 - (((distance - 1) / 39) * 560), 40, 600)
-        fovCircle.Radius = Config.FOVRadius
-    end
-end
-
--- ═══════════════════════════════════════════════════════════════
 -- HITSOUNDS
--- ═══════════════════════════════════════════════════════════════
 local function playHitsound()
     if not State.hitsoundsEnabled then return end
     local sound = Instance.new("Sound")
@@ -255,9 +185,7 @@ local function playHitsound()
     delay(2, function() if sound and sound.Parent then sound:Destroy() end end)
 end
 
--- ═══════════════════════════════════════════════════════════════
 -- ESP
--- ═══════════════════════════════════════════════════════════════
 local function createESP(player)
     if player == LocalPlayer then return end
     if Config.TeamCheck and player.Team == LocalPlayer.Team then return end
@@ -271,54 +199,18 @@ local function createESP(player)
     billboard.Name = "PlayerESP"
     billboard.Adornee = hrp
     billboard.Size = UDim2.new(4, 0, 6, 0)
-    billboard.StudsOffset = Vector3.new(0, 0, 0)
     billboard.AlwaysOnTop = true
     
     local mainFrame = Instance.new("Frame")
     mainFrame.Size = UDim2.new(1, 0, 1, 0)
     mainFrame.BackgroundTransparency = 1
-    mainFrame.BorderSizePixel = 0
     
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = 2
     stroke.Color = Config.ESPOutlineColor
     stroke.Parent = mainFrame
     
-    local boxImage = Instance.new("ImageLabel")
-    boxImage.Size = UDim2.new(1, 0, 1, 0)
-    boxImage.BackgroundTransparency = 1
-    boxImage.Image = "rbxassetid://1448806388"
-    boxImage.ImageColor3 = Config.ESPGradientColor
-    boxImage.Parent = mainFrame
-    
-    local healthBg = Instance.new("Frame")
-    healthBg.Name = "HealthBarBg"
-    healthBg.Size = UDim2.new(0.05, 0, 1, 0)
-    healthBg.Position = UDim2.new(0, 0, 0.5, 0)
-    healthBg.AnchorPoint = Vector2.new(0, 0.5)
-    healthBg.BackgroundColor3 = Color3.fromRGB(159, 0, 0)
-    healthBg.BorderSizePixel = 0
-    Instance.new("UICorner", healthBg).CornerRadius = UDim.new(1, 0)
-    
-    local healthFill = Instance.new("Frame")
-    healthFill.Name = "HealthFill"
-    healthFill.Size = UDim2.new(1, 0, 1, 0)
-    healthFill.Position = UDim2.new(0, 0, 1, 0)
-    healthFill.AnchorPoint = Vector2.new(0, 1)
-    healthFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    healthFill.BorderSizePixel = 0
-    Instance.new("UICorner", healthFill).CornerRadius = UDim.new(1, 0)
-    healthFill.Parent = healthBg
-    healthBg.Parent = mainFrame
-    
-    humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-        local percent = humanoid.Health / humanoid.MaxHealth
-        healthFill.Size = UDim2.new(1, 0, percent, 0)
-        healthFill.BackgroundColor3 = Color3.new(1 - percent, percent, 0)
-    end)
-    
     local nameTag = Instance.new("TextLabel")
-    nameTag.Name = "PlayerNameTag"
     nameTag.Size = UDim2.new(1, 0, 0.14, 0)
     nameTag.BackgroundTransparency = 1
     nameTag.TextScaled = true
@@ -345,19 +237,12 @@ local function updateESP()
         return
     end
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            createESP(player)
-        else
-            removeESP(player)
-        end
+        if player ~= LocalPlayer and player.Character then createESP(player) else removeESP(player) end
     end
 end
 
--- ═══════════════════════════════════════════════════════════════
 -- CHAMS
--- ═══════════════════════════════════════════════════════════════
 local highlights = {}
-
 local function createHighlight(character)
     local highlight = Instance.new("Highlight")
     highlight.FillColor = Config.ChamsColor
@@ -376,60 +261,36 @@ local function setupChams(player)
         if not State.chamsEnabled then return end
         if highlights[player] then highlights[player]:Destroy() end
         highlights[player] = createHighlight(character)
-        character.Destroying:Connect(function()
-            if highlights[player] then highlights[player]:Destroy(); highlights[player] = nil end
-        end)
     end
     player.CharacterAdded:Connect(onCharacterAdded)
     if player.Character then onCharacterAdded(player.Character) end
 end
 
--- ═══════════════════════════════════════════════════════════════
 -- TRIGGERBOT
--- ═══════════════════════════════════════════════════════════════
-local function isTargetingEnemy()
+local function triggerFire()
+    if not State.triggerbotEnabled then return end
     local target = Mouse.Target
     if target and target.Parent then
         local player = Players:GetPlayerFromCharacter(target.Parent)
-        if player and player ~= LocalPlayer then return true end
-    end
-    return false
-end
-
-local function triggerFire()
-    if State.triggerbotEnabled and isTargetingEnemy() then
-        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+        if player and player ~= LocalPlayer then
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+        end
     end
 end
 
--- ═══════════════════════════════════════════════════════════════
 -- LOCKPICKER
--- ═══════════════════════════════════════════════════════════════
-local lockpickBars = {"B1", "B2", "B3"}
-
 local function findLockpickGUI()
     local gui = LocalPlayer.PlayerGui:FindFirstChild("LockpickGUI")
     if not gui then return nil end
-    return {
-        Frames = gui:FindFirstChild("Frames", true),
-        Line = gui:FindFirstChild("Line", true)
-    }
-end
-
-local function clickElement(element)
-    if element then
-        local pos, size = element.AbsolutePosition, element.AbsoluteSize
-        local center = Vector2.new(pos.X + size.X / 2, pos.Y + size.Y / 2)
-        VirtualInputManager:SendMouseButtonEvent(center.X, center.Y, 0, true, game, 0)
-        VirtualInputManager:SendMouseButtonEvent(center.X, center.Y, 0, false, game, 0)
-    end
+    return {Frames = gui:FindFirstChild("Frames", true), Line = gui:FindFirstChild("Line", true)}
 end
 
 local function startLockpicker()
     if not State.lockpickerEnabled or State.lockpickerRunning then return end
     State.lockpickerRunning = true
     local currentBar, lastClickTime = 1, 0
+    local lockpickBars = {"B1", "B2", "B3"}
     
     local conn
     conn = RunService.RenderStepped:Connect(function()
@@ -437,22 +298,21 @@ local function startLockpicker()
         local gui = findLockpickGUI()
         if not gui or not gui.Frames or not gui.Line then conn:Disconnect(); State.lockpickerRunning = false; return end
         
-        local barName = lockpickBars[currentBar]
-        if not barName then conn:Disconnect(); State.lockpickerRunning = false; return end
-        
-        local barFrame = gui.Frames:FindFirstChild(barName)
+        local barFrame = gui.Frames:FindFirstChild(lockpickBars[currentBar])
         if barFrame then
             local bar = barFrame:FindFirstChild("Bar")
             if bar then
                 local yDiff = bar.AbsolutePosition.Y - gui.Line.AbsolutePosition.Y
                 if math.abs(yDiff) <= 8 and (os.clock() - lastClickTime) > 0.02 then
-                    clickElement(bar)
+                    local pos = bar.AbsolutePosition + bar.AbsoluteSize / 2
+                    VirtualInputManager:SendMouseButtonEvent(pos.X, pos.Y, 0, true, game, 0)
+                    VirtualInputManager:SendMouseButtonEvent(pos.X, pos.Y, 0, false, game, 0)
                     lastClickTime = os.clock()
                     currentBar = currentBar + 1
                 end
             end
         end
-        if currentBar > #lockpickBars then currentBar = 1 end
+        if currentBar > 3 then currentBar = 1 end
     end)
 end
 
@@ -466,9 +326,7 @@ spawn(function()
     end)
 end)
 
--- ═══════════════════════════════════════════════════════════════
 -- KILL SAY
--- ═══════════════════════════════════════════════════════════════
 local function sendKillMessage()
     if not State.killSayEnabled then return end
     local message = Config.KillSayMessages[math.random(1, #Config.KillSayMessages)]
@@ -480,10 +338,149 @@ local function sendKillMessage()
 end
 
 -- ═══════════════════════════════════════════════════════════════
--- VISUALS
+-- ЖИРНЫЕ ФУНКЦИИ
 -- ═══════════════════════════════════════════════════════════════
-local originalFOV = Camera.FieldOfView
 
+-- INFINITE JUMP
+UserInputService.JumpRequest:Connect(function()
+    if State.infiniteJumpEnabled and LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then humanoid:ChangeState(Enum.HumanoidStateType.Jumping) end
+    end
+end)
+
+-- NOCLIP
+local noclipConn
+local function toggleNoclip(enabled)
+    if enabled then
+        noclipConn = RunService.Stepped:Connect(function()
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide = false end
+                end
+            end
+        end)
+    else
+        if noclipConn then noclipConn:Disconnect() end
+    end
+end
+
+-- FLY
+local flyConn, flyBV, flyBG
+local function toggleFly(enabled)
+    if enabled then
+        local char = LocalPlayer.Character
+        if not char then return end
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        
+        flyBV = Instance.new("BodyVelocity")
+        flyBV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        flyBV.Velocity = Vector3.new(0, 0, 0)
+        flyBV.Parent = hrp
+        
+        flyBG = Instance.new("BodyGyro")
+        flyBG.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+        flyBG.P = 9e4
+        flyBG.Parent = hrp
+        
+        flyConn = RunService.RenderStepped:Connect(function()
+            local moveDir = Vector3.new(0, 0, 0)
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - Camera.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Camera.CFrame.RightVector end
+            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, 1, 0) end
+            if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir = moveDir - Vector3.new(0, 1, 0) end
+            flyBV.Velocity = moveDir * Config.FlySpeed
+            flyBG.CFrame = Camera.CFrame
+        end)
+    else
+        if flyConn then flyConn:Disconnect() end
+        if flyBV then flyBV:Destroy() end
+        if flyBG then flyBG:Destroy() end
+    end
+end
+
+-- SPEED HACK
+local function updateSpeed()
+    if LocalPlayer.Character then
+        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid and State.speedEnabled then
+            humanoid.WalkSpeed = Config.WalkSpeed
+            humanoid.JumpPower = Config.JumpPower
+        end
+    end
+end
+
+-- ANTI-AFK
+local antiAFKConn
+local function toggleAntiAFK(enabled)
+    if enabled then
+        local vu = game:GetService("VirtualUser")
+        antiAFKConn = LocalPlayer.Idled:Connect(function()
+            vu:CaptureController()
+            vu:ClickButton2(Vector2.new())
+        end)
+    else
+        if antiAFKConn then antiAFKConn:Disconnect() end
+    end
+end
+
+-- SPINBOT
+local spinConn
+local function toggleSpinbot(enabled)
+    if enabled then
+        spinConn = RunService.RenderStepped:Connect(function()
+            if LocalPlayer.Character then
+                local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(Config.SpinSpeed), 0) end
+            end
+        end)
+    else
+        if spinConn then spinConn:Disconnect() end
+    end
+end
+
+-- HITBOX EXPANDER
+local originalSizes = {}
+local function toggleHitboxExpander(enabled)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                if enabled then
+                    if not originalSizes[player] then originalSizes[player] = hrp.Size end
+                    hrp.Size = Vector3.new(Config.HitboxSize, Config.HitboxSize, Config.HitboxSize)
+                    hrp.Transparency = 0.7
+                else
+                    if originalSizes[player] then hrp.Size = originalSizes[player] end
+                    hrp.Transparency = 1
+                end
+            end
+        end
+    end
+end
+
+-- BHOP
+local bhopConn
+local function toggleBhop(enabled)
+    if enabled then
+        bhopConn = RunService.RenderStepped:Connect(function()
+            if LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid and humanoid.FloorMaterial ~= Enum.Material.Air then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end
+        end)
+    else
+        if bhopConn then bhopConn:Disconnect() end
+    end
+end
+
+-- VISUALS
+local originalFOV = Camera.FieldOfView
 local function updateVisuals()
     if State.fullbrightEnabled then
         Lighting.Ambient = Config.FullbrightColor
@@ -491,14 +488,10 @@ local function updateVisuals()
     end
     if State.fovChangerEnabled then
         Camera.FieldOfView = originalFOV + Config.AdditionalFOV
-    else
-        originalFOV = Camera.FieldOfView
     end
 end
 
--- ═══════════════════════════════════════════════════════════════
--- INPUT HANDLING
--- ═══════════════════════════════════════════════════════════════
+-- INPUT
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.UserInputType == Config.ActivationKey then
         State.isAiming = true
@@ -510,19 +503,18 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
     if not gameProcessed and input.UserInputType == Config.ActivationKey then
         State.isAiming = false
         State.currentTarget = nil
-        State.lastTargetHealth = nil
     end
 end)
 
--- ═══════════════════════════════════════════════════════════════
 -- MAIN LOOP
--- ═══════════════════════════════════════════════════════════════
 RunService.RenderStepped:Connect(function()
-    updateDynamicFOV()
     updateFOVCircle()
     updateESP()
     updateVisuals()
+    updateSpeed()
     triggerFire()
+    
+    if State.hitboxExpanderEnabled then toggleHitboxExpander(true) end
     
     if State.isAiming then
         local now = tick()
@@ -549,7 +541,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Initialize
+-- INIT
 for _, player in ipairs(Players:GetPlayers()) do setupChams(player) end
 Players.PlayerAdded:Connect(function(player)
     setupChams(player)
@@ -561,7 +553,7 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 -- ═══════════════════════════════════════════════════════════════
--- LINORIA UI
+-- LINORIA UI (РУССКИЙ)
 -- ═══════════════════════════════════════════════════════════════
 local LinoriaURL = "https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/"
 local Library = loadstring(game:HttpGet(LinoriaURL .. "Library.lua"))()
@@ -578,50 +570,40 @@ local Window = Library:CreateWindow({
 })
 
 local Tabs = {
-    Main = Window:AddTab("Misc"),
-    Combat = Window:AddTab("Combat"),
-    Players = Window:AddTab("Players"),
-    Config = Window:AddTab("Config")
+    Main = Window:AddTab("Разное"),
+    Combat = Window:AddTab("Боевые"),
+    Movement = Window:AddTab("Движение"),
+    Players = Window:AddTab("Игроки"),
+    Config = Window:AddTab("Настройки")
 }
 
--- MISC TAB
-local MiscLeft = Tabs.Main:AddLeftGroupbox("Misc Features")
-local MiscRight = Tabs.Main:AddRightGroupbox("Visual Settings")
+-- ВКЛАДКА РАЗНОЕ
+local MiscLeft = Tabs.Main:AddLeftGroupbox("Визуалы")
+local MiscRight = Tabs.Main:AddRightGroupbox("Настройки визуалов")
 
-MiscLeft:AddToggle("ESPEnabled", {Text = "Toggle ESP", Default = false, Callback = function(v) State.espEnabled = v end})
-MiscLeft:AddToggle("toggleKillSay", {Text = "Kill Say", Default = false, Callback = function(v) State.killSayEnabled = v end})
-MiscLeft:AddSlider("MessageKillDelay", {Text = "Kill Message Delay", Default = 1.5, Min = 0.5, Max = 5, Rounding = 1, Callback = function(v) Config.KillSayDelay = v end})
-MiscLeft:AddToggle("FovCircleVisibility", {Text = "Toggle FOV Circle", Default = true, Callback = function(v) fovCircle.Visible = v end})
-MiscLeft:AddToggle("chamsEnabled", {Text = "Enable Chams", Default = false, Callback = function(v) State.chamsEnabled = v end})
-MiscLeft:AddToggle("hitsoundsEnabled", {Text = "Toggle Hitsounds", Default = false, Callback = function(v) State.hitsoundsEnabled = v end})
-MiscLeft:AddToggle("enableAutoLockpicker", {Text = "Toggle Lockpicker", Default = false, Callback = function(v) State.lockpickerEnabled = v end})
-
-local hitsoundNames = {"Slime", "Fortnite", "Pan", "Quake", "Boing", "Neverlose", "Wood", "Minecraft", "Rust"}
-MiscLeft:AddDropdown("hitsoundSelected", {Values = hitsoundNames, Default = "Slime", Text = "Select Hitsound", Callback = function(v) Config.SelectedHitsound = Config.Hitsounds[v] or v end})
-MiscLeft:AddInput("customHitsound", {Default = "", Numeric = false, Finished = true, Text = "Custom Hitsound", Placeholder = "rbxassetid://...", Callback = function(v)
-    if v:match("^rbxassetid://%d+$") then
-        local name = "Custom" .. tostring(#hitsoundNames + 1)
-        Config.Hitsounds[name] = v
-        table.insert(hitsoundNames, name)
-        Options.hitsoundSelected:SetValues(hitsoundNames)
-    end
+MiscLeft:AddToggle("ESPEnabled", {Text = "ESP (Обводка игроков)", Default = false, Callback = function(v) State.espEnabled = v end})
+MiscLeft:AddToggle("chamsEnabled", {Text = "Chams (Подсветка)", Default = false, Callback = function(v) 
+    State.chamsEnabled = v
+    if v then for _, p in pairs(Players:GetPlayers()) do setupChams(p) end
+    else for _, h in pairs(highlights) do h:Destroy() end; highlights = {} end
 end})
-MiscLeft:AddToggle("enableFOVLock", {Text = "Enable FOV Changer", Default = false, Callback = function(v) State.fovChangerEnabled = v end})
-MiscLeft:AddSlider("Field Of View", {Text = "Additional FOV", Default = 10, Min = 1, Max = 120, Rounding = 0, Callback = function(v) Config.AdditionalFOV = v end})
+MiscLeft:AddToggle("FovCircleVisibility", {Text = "Показать FOV круг", Default = true, Callback = function(v) fovCircle.Visible = v end})
+MiscLeft:AddToggle("enableLight", {Text = "Fullbright (Яркость)", Default = false, Callback = function(v) State.fullbrightEnabled = v end})
+MiscLeft:AddToggle("NoShadows", {Text = "Убрать тени", Default = false, Callback = function(v) Lighting.GlobalShadows = not v end})
+MiscLeft:AddToggle("enableFOVLock", {Text = "Изменить FOV камеры", Default = false, Callback = function(v) State.fovChangerEnabled = v end})
+MiscLeft:AddSlider("Field Of View", {Text = "Доп. FOV камеры", Default = 10, Min = 1, Max = 120, Rounding = 0, Callback = function(v) Config.AdditionalFOV = v end})
 
--- Visual Settings
-MiscRight:AddLabel("FOV Circle Color"):AddColorPicker("fovCircleColor", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) fovCircle.Color = v end})
-MiscRight:AddLabel("Chams Color"):AddColorPicker("colorForChams", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) Config.ChamsColor = v end})
-MiscRight:AddToggle("enableLight", {Text = "Toggle Fullbright", Default = false, Callback = function(v) State.fullbrightEnabled = v end})
-MiscRight:AddLabel("Lighting Color"):AddColorPicker("lightColor", {Default = Color3.new(1, 1, 1), Callback = function(v) Config.FullbrightColor = v end})
-MiscRight:AddToggle("NoShadows", {Text = "Remove Shadows", Default = false, Callback = function(v) Lighting.GlobalShadows = not v end})
-MiscRight:AddLabel("ESP Box Color"):AddColorPicker("boxColor", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) Config.ESPOutlineColor = v end})
-MiscRight:AddSlider("chamsTransparency", {Text = "Chams Transparency", Default = 0.5, Min = 0.01, Max = 1, Rounding = 2, Callback = function(v) Config.ChamsTransparency = v end})
-MiscRight:AddToggle("FpsBoost", {Text = "FPS Boost", Default = false, Callback = function(v)
+MiscRight:AddLabel("Цвет FOV круга"):AddColorPicker("fovCircleColor", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) fovCircle.Color = v end})
+MiscRight:AddLabel("Цвет Chams"):AddColorPicker("colorForChams", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) Config.ChamsColor = v end})
+MiscRight:AddLabel("Цвет освещения"):AddColorPicker("lightColor", {Default = Color3.new(1, 1, 1), Callback = function(v) Config.FullbrightColor = v end})
+MiscRight:AddLabel("Цвет ESP"):AddColorPicker("boxColor", {Default = Color3.fromRGB(0, 255, 100), Callback = function(v) Config.ESPOutlineColor = v end})
+MiscRight:AddSlider("chamsTransparency", {Text = "Прозрачность Chams", Default = 0.5, Min = 0.01, Max = 1, Rounding = 2, Callback = function(v) Config.ChamsTransparency = v end})
+
+MiscRight:AddToggle("FpsBoost", {Text = "FPS Буст", Default = false, Callback = function(v)
     if v then
         local Terrain = Workspace.Terrain
         Terrain.WaterWaveSize, Terrain.WaterWaveSpeed, Terrain.WaterReflectance, Terrain.WaterTransparency = 0, 0, 0, 0
-        Lighting.FogEnd, Lighting.Brightness = 9000000000, 0
+        Lighting.FogEnd, Lighting.Brightness = 9e9, 0
         settings().Rendering.QualityLevel = "Level01"
         for _, obj in pairs(game:GetDescendants()) do
             if obj:IsA("Part") or obj:IsA("MeshPart") then obj.Material = Enum.Material.Plastic; obj.Reflectance = 0
@@ -634,28 +616,49 @@ MiscRight:AddToggle("FpsBoost", {Text = "FPS Boost", Default = false, Callback =
     end
 end})
 
--- COMBAT TAB
-local CombatLeft = Tabs.Combat:AddLeftGroupbox("Aim Settings")
-local CombatRight = Tabs.Combat:AddRightGroupbox("Advanced Settings")
+-- ВКЛАДКА БОЕВЫЕ
+local CombatLeft = Tabs.Combat:AddLeftGroupbox("Наведение")
+local CombatRight = Tabs.Combat:AddRightGroupbox("Дополнительно")
 
-CombatLeft:AddToggle("TeamCheck", {Text = "Team Check", Default = false, Callback = function(v) Config.TeamCheck = v end})
-CombatLeft:AddToggle("DynamicFOV", {Text = "Dynamic FOV", Default = false, Callback = function(v) State.dynamicFOVEnabled = v end})
-CombatLeft:AddToggle("Elastic", {Text = "Aim Assist (Elastic)", Default = false, Callback = function(v) Config.ElasticEnabled = v end})
-CombatLeft:AddSlider("Aim Assist Speed", {Text = "Elastic Speed", Default = 1.6, Min = 0.01, Max = 2, Rounding = 2, Callback = function(v) Config.ElasticSpeed = v end})
-CombatLeft:AddSlider("fov", {Text = "FOV Radius", Default = 200, Min = 1, Max = 600, Rounding = 0, Callback = function(v) Config.FOVRadius = v end})
-CombatLeft:AddLabel("Triggerbot"):AddKeyPicker("enableTriggerBot", {Default = "K", Mode = "Toggle", Text = "Triggerbot", Callback = function() State.triggerbotEnabled = not State.triggerbotEnabled; Library:Notify("Triggerbot: " .. (State.triggerbotEnabled and "ON" or "OFF")) end})
-CombatLeft:AddLabel("Wall Toggle"):AddKeyPicker("ignorewalls", {Default = "J", Mode = "Toggle", Text = "Ignore Walls", Callback = function() State.wallCheckDisabled = not State.wallCheckDisabled; Library:Notify("Ignore Walls: " .. (State.wallCheckDisabled and "ON" or "OFF")) end})
-CombatLeft:AddSlider("sensitivity", {Text = "Smoothness", Default = 80, Min = 1, Max = 200, Rounding = 0, Callback = function(v) Config.Smoothness = v end})
-CombatLeft:AddSlider("predictionFactor", {Text = "Prediction", Default = 0.1, Min = 0.01, Max = 2, Rounding = 2, Callback = function(v) Config.Prediction = v end})
+CombatLeft:AddToggle("TeamCheck", {Text = "Проверка команды", Default = false, Callback = function(v) Config.TeamCheck = v end})
+CombatLeft:AddToggle("DynamicFOV", {Text = "Динамический FOV", Default = false, Callback = function(v) State.dynamicFOVEnabled = v end})
+CombatLeft:AddToggle("Elastic", {Text = "Аим ассист (Elastic)", Default = false, Callback = function(v) Config.ElasticEnabled = v end})
+CombatLeft:AddSlider("Aim Assist Speed", {Text = "Скорость Elastic", Default = 1.6, Min = 0.01, Max = 2, Rounding = 2, Callback = function(v) Config.ElasticSpeed = v end})
+CombatLeft:AddSlider("fov", {Text = "Радиус FOV", Default = 200, Min = 1, Max = 600, Rounding = 0, Callback = function(v) Config.FOVRadius = v end})
+CombatLeft:AddSlider("sensitivity", {Text = "Плавность", Default = 80, Min = 1, Max = 200, Rounding = 0, Callback = function(v) Config.Smoothness = v end})
+CombatLeft:AddSlider("predictionFactor", {Text = "Предикшн", Default = 0.1, Min = 0.01, Max = 2, Rounding = 2, Callback = function(v) Config.Prediction = v end})
 
--- Advanced Settings
-CombatRight:AddLabel("Humanizer"):AddKeyPicker("humanizer", {Default = "V", Mode = "Toggle", Text = "Humanizer", Callback = function() Config.HumanizationEnabled = not Config.HumanizationEnabled; Library:Notify("Humanizer: " .. (Config.HumanizationEnabled and "ON" or "OFF")) end})
-CombatRight:AddSlider("humanizerSpeed", {Text = "Humanizer Speed", Default = 0.19, Min = 0.01, Max = 5, Rounding = 2, Callback = function(v) Config.HumanizationSpeed = v end})
-CombatRight:AddSlider("driftIntensity", {Text = "Drift Intensity", Default = 1, Min = 0.01, Max = 20, Rounding = 2, Callback = function(v) Config.DriftIntensity = v end})
-CombatRight:AddSlider("overshootFactor", {Text = "Aim Jitter", Default = 0.3, Min = 0.01, Max = 20, Rounding = 2, Callback = function(v) Config.AimJitter = v end})
+CombatLeft:AddLabel("Триггербот"):AddKeyPicker("enableTriggerBot", {Default = "K", Mode = "Toggle", Text = "Триггербот", Callback = function() 
+    State.triggerbotEnabled = not State.triggerbotEnabled
+    Library:Notify("Триггербот: " .. (State.triggerbotEnabled and "ВКЛ" or "ВЫКЛ"))
+end})
+CombatLeft:AddLabel("Сквозь стены"):AddKeyPicker("ignorewalls", {Default = "J", Mode = "Toggle", Text = "Игнор стен", Callback = function() 
+    State.wallCheckDisabled = not State.wallCheckDisabled
+    Library:Notify("Игнор стен: " .. (State.wallCheckDisabled and "ВКЛ" or "ВЫКЛ"))
+end})
 
-local hitpartOptions = {"Head", "UpperTorso", "LowerTorso", "LeftUpperArm", "RightUpperArm", "LeftUpperLeg", "RightUpperLeg", "Torso"}
-CombatRight:AddDropdown("HitpartDropdown", {Values = hitpartOptions, Default = Config.TargetParts, Multi = true, Text = "Select Hit Parts", Callback = function(v)
+CombatRight:AddToggle("hitsoundsEnabled", {Text = "Хитсаунды", Default = false, Callback = function(v) State.hitsoundsEnabled = v end})
+local hitsoundNames = {"Slime", "Fortnite", "Pan", "Quake", "Boing", "Neverlose", "Wood", "Minecraft", "Rust"}
+CombatRight:AddDropdown("hitsoundSelected", {Values = hitsoundNames, Default = "Slime", Text = "Выбрать хитсаунд", Callback = function(v) Config.SelectedHitsound = Config.Hitsounds[v] end})
+CombatRight:AddSlider("hitsoundVol", {Text = "Громкость хитсаунда", Default = 5, Min = 0.1, Max = 10, Rounding = 1, Callback = function(v) Config.HitsoundVolume = v end})
+
+CombatRight:AddToggle("toggleKillSay", {Text = "Kill Say (сообщение)", Default = false, Callback = function(v) State.killSayEnabled = v end})
+CombatRight:AddToggle("enableAutoLockpicker", {Text = "Авто-взлом замков", Default = false, Callback = function(v) State.lockpickerEnabled = v end})
+
+CombatRight:AddToggle("hitboxExpander", {Text = "Расширить хитбоксы", Default = false, Callback = function(v) 
+    State.hitboxExpanderEnabled = v
+    if not v then toggleHitboxExpander(false) end
+end})
+CombatRight:AddSlider("hitboxSize", {Text = "Размер хитбокса", Default = 10, Min = 5, Max = 30, Rounding = 0, Callback = function(v) Config.HitboxSize = v end})
+
+CombatRight:AddLabel("Гуманизатор"):AddKeyPicker("humanizer", {Default = "V", Mode = "Toggle", Text = "Гуманизатор", Callback = function() 
+    Config.HumanizationEnabled = not Config.HumanizationEnabled
+    Library:Notify("Гуманизатор: " .. (Config.HumanizationEnabled and "ВКЛ" or "ВЫКЛ"))
+end})
+CombatRight:AddSlider("humanizerSpeed", {Text = "Скорость гуманизатора", Default = 0.19, Min = 0.01, Max = 5, Rounding = 2, Callback = function(v) Config.HumanizationSpeed = v end})
+
+local hitpartOptions = {"Head", "UpperTorso", "LowerTorso", "LeftUpperArm", "RightUpperArm"}
+CombatRight:AddDropdown("HitpartDropdown", {Values = hitpartOptions, Default = Config.TargetParts, Multi = true, Text = "Части тела", Callback = function(v)
     local parts = {}
     for name, enabled in pairs(v) do if enabled then table.insert(parts, name) end end
     if #parts == 0 then parts = {"Head"} end
@@ -663,17 +666,32 @@ CombatRight:AddDropdown("HitpartDropdown", {Values = hitpartOptions, Default = C
 end})
 Options.HitpartDropdown:SetValue({Head = true, UpperTorso = true})
 
-local keybindOptions = {"Q", "E", "R", "F", "G", "H", "J", "K", "MouseButton1", "MouseButton2", "MouseButton3"}
-CombatLeft:AddDropdown("KeybindDropdown", {Values = keybindOptions, Default = "MouseButton2", Text = "Select Aim Key", Callback = function(v)
+local keybindOptions = {"Q", "E", "R", "F", "G", "MouseButton1", "MouseButton2", "MouseButton3"}
+CombatLeft:AddDropdown("KeybindDropdown", {Values = keybindOptions, Default = "MouseButton2", Text = "Кнопка аима", Callback = function(v)
     for _, key in pairs(Enum.KeyCode:GetEnumItems()) do if key.Name == v then Config.ActivationKey = key; return end end
     for _, key in pairs(Enum.UserInputType:GetEnumItems()) do if key.Name == v then Config.ActivationKey = key; return end end
 end})
 
--- ═══════════════════════════════════════════════════════════════
--- PLAYERS TAB
--- ═══════════════════════════════════════════════════════════════
-local PlayersLeft = Tabs.Players:AddLeftGroupbox("Player List")
-local PlayersRight = Tabs.Players:AddRightGroupbox("Player Actions")
+-- ВКЛАДКА ДВИЖЕНИЕ
+local MoveLeft = Tabs.Movement:AddLeftGroupbox("Передвижение")
+local MoveRight = Tabs.Movement:AddRightGroupbox("Настройки")
+
+MoveLeft:AddToggle("infiniteJump", {Text = "Бесконечный прыжок", Default = false, Callback = function(v) State.infiniteJumpEnabled = v end})
+MoveLeft:AddToggle("noclip", {Text = "Ноклип (сквозь стены)", Default = false, Callback = function(v) State.noclipEnabled = v; toggleNoclip(v) end})
+MoveLeft:AddToggle("fly", {Text = "Полёт", Default = false, Callback = function(v) State.flyEnabled = v; toggleFly(v) end})
+MoveLeft:AddToggle("speed", {Text = "Спидхак", Default = false, Callback = function(v) State.speedEnabled = v end})
+MoveLeft:AddToggle("bhop", {Text = "Банихоп (автопрыжок)", Default = false, Callback = function(v) State.bhopping = v; toggleBhop(v) end})
+MoveLeft:AddToggle("spinbot", {Text = "Спинбот (вращение)", Default = false, Callback = function(v) State.spinbotEnabled = v; toggleSpinbot(v) end})
+MoveLeft:AddToggle("antiAFK", {Text = "Анти-АФК", Default = false, Callback = function(v) State.antiAFKEnabled = v; toggleAntiAFK(v) end})
+
+MoveRight:AddSlider("walkSpeed", {Text = "Скорость ходьбы", Default = 16, Min = 16, Max = 500, Rounding = 0, Callback = function(v) Config.WalkSpeed = v end})
+MoveRight:AddSlider("jumpPower", {Text = "Сила прыжка", Default = 50, Min = 50, Max = 500, Rounding = 0, Callback = function(v) Config.JumpPower = v end})
+MoveRight:AddSlider("flySpeed", {Text = "Скорость полёта", Default = 50, Min = 10, Max = 500, Rounding = 0, Callback = function(v) Config.FlySpeed = v end})
+MoveRight:AddSlider("spinSpeed", {Text = "Скорость вращения", Default = 50, Min = 10, Max = 100, Rounding = 0, Callback = function(v) Config.SpinSpeed = v end})
+
+-- ВКЛАДКА ИГРОКИ
+local PlayersLeft = Tabs.Players:AddLeftGroupbox("Список игроков")
+local PlayersRight = Tabs.Players:AddRightGroupbox("Действия")
 
 local selectedPlayer = nil
 local playerNames = {}
@@ -681,112 +699,89 @@ local playerNames = {}
 local function updatePlayerList()
     playerNames = {}
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(playerNames, player.Name)
-        end
+        if player ~= LocalPlayer then table.insert(playerNames, player.Name) end
     end
-    if Options and Options.PlayerDropdown then
-        Options.PlayerDropdown:SetValues(playerNames)
-    end
+    if Options and Options.PlayerDropdown then Options.PlayerDropdown:SetValues(playerNames) end
 end
 
-PlayersLeft:AddButton("Refresh Player List", function()
+PlayersLeft:AddButton("Обновить список", function()
     updatePlayerList()
-    Library:Notify("Player list refreshed! (" .. #playerNames .. " players)")
+    Library:Notify("Список обновлён! (" .. #playerNames .. " игроков)")
 end)
 
-PlayersLeft:AddButton("Show All Players", function()
-    local playerList = "Players on server:\n"
+PlayersLeft:AddButton("Показать всех", function()
+    local list = "Игроки на сервере:\n"
     for i, player in ipairs(Players:GetPlayers()) do
-        local displayName = player.DisplayName ~= player.Name and " (" .. player.DisplayName .. ")" or ""
-        playerList = playerList .. i .. ". " .. player.Name .. displayName .. "\n"
+        list = list .. i .. ". " .. player.Name .. "\n"
     end
-    Library:Notify(playerList, 10)
+    Library:Notify(list, 10)
 end)
 
 PlayersLeft:AddDropdown("PlayerDropdown", {
-    Values = playerNames,
-    Default = nil,
-    Text = "Select Player",
+    Values = playerNames, Default = nil, Text = "Выбрать игрока",
     Callback = function(v)
         selectedPlayer = Players:FindFirstChild(v)
-        if selectedPlayer then
-            Library:Notify("Selected: " .. v)
-        end
+        if selectedPlayer then Library:Notify("Выбран: " .. v) end
     end
 })
 
-PlayersRight:AddButton("Spectate Player", function()
+PlayersRight:AddButton("Наблюдать", function()
     if selectedPlayer and selectedPlayer.Character then
-        local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            Camera.CameraSubject = selectedPlayer.Character:FindFirstChildOfClass("Humanoid")
-            Library:Notify("Spectating: " .. selectedPlayer.Name)
-        end
-    else
-        Library:Notify("No player selected!")
-    end
+        Camera.CameraSubject = selectedPlayer.Character:FindFirstChildOfClass("Humanoid")
+        Library:Notify("Наблюдаем за: " .. selectedPlayer.Name)
+    else Library:Notify("Игрок не выбран!") end
 end)
 
-PlayersRight:AddButton("Unspectate", function()
+PlayersRight:AddButton("Перестать наблюдать", function()
     if LocalPlayer.Character then
         Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        Library:Notify("Stopped spectating")
+        Library:Notify("Наблюдение остановлено")
     end
 end)
 
-PlayersRight:AddButton("Teleport To Player", function()
+PlayersRight:AddButton("Телепорт к игроку", function()
     if selectedPlayer and selectedPlayer.Character and LocalPlayer.Character then
         local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
         local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if targetHRP and myHRP then
             myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
-            Library:Notify("Teleported to: " .. selectedPlayer.Name)
+            Library:Notify("Телепорт к: " .. selectedPlayer.Name)
         end
-    else
-        Library:Notify("No player selected or character not found!")
-    end
+    else Library:Notify("Игрок не выбран!") end
 end)
 
-PlayersRight:AddButton("Copy Player Name", function()
+PlayersRight:AddButton("Копировать ник", function()
     if selectedPlayer then
-        if setclipboard then
-            setclipboard(selectedPlayer.Name)
-            Library:Notify("Copied: " .. selectedPlayer.Name)
-        else
-            Library:Notify("Clipboard not supported!")
-        end
-    else
-        Library:Notify("No player selected!")
-    end
+        if setclipboard then setclipboard(selectedPlayer.Name); Library:Notify("Скопировано: " .. selectedPlayer.Name)
+        else Library:Notify("Буфер обмена недоступен!") end
+    else Library:Notify("Игрок не выбран!") end
 end)
 
-PlayersRight:AddButton("View Player Info", function()
+PlayersRight:AddButton("Инфо об игроке", function()
     if selectedPlayer then
-        local info = "Player Info:\n"
-        info = info .. "Name: " .. selectedPlayer.Name .. "\n"
-        info = info .. "Display: " .. selectedPlayer.DisplayName .. "\n"
-        info = info .. "UserID: " .. selectedPlayer.UserId .. "\n"
-        info = info .. "Account Age: " .. selectedPlayer.AccountAge .. " days\n"
+        local info = "Информация:\n"
+        info = info .. "Ник: " .. selectedPlayer.Name .. "\n"
+        info = info .. "Дисплей: " .. selectedPlayer.DisplayName .. "\n"
+        info = info .. "ID: " .. selectedPlayer.UserId .. "\n"
+        info = info .. "Возраст акка: " .. selectedPlayer.AccountAge .. " дней\n"
         if selectedPlayer.Character then
             local humanoid = selectedPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                info = info .. "Health: " .. math.floor(humanoid.Health) .. "/" .. humanoid.MaxHealth
-            end
+            if humanoid then info = info .. "HP: " .. math.floor(humanoid.Health) .. "/" .. humanoid.MaxHealth end
         end
         Library:Notify(info, 8)
-    else
-        Library:Notify("No player selected!")
-    end
+    else Library:Notify("Игрок не выбран!") end
 end)
 
--- Auto-update player list
+PlayersRight:AddButton("Телепорт всех ко мне", function()
+    Library:Notify("Эта функция требует серверных прав!")
+end)
+
 Players.PlayerAdded:Connect(function() task.wait(1); updatePlayerList() end)
 Players.PlayerRemoving:Connect(function() task.wait(0.5); updatePlayerList() end)
 task.spawn(updatePlayerList)
 
--- CONFIG TAB
-local ConfigGroup = Tabs.Config:AddLeftGroupbox("Configuration")
+-- ВКЛАДКА НАСТРОЙКИ
+local ConfigGroup = Tabs.Config:AddLeftGroupbox("Конфигурация")
 ThemeManager:SetLibrary(Library)
 SaveManager:SetLibrary(Library)
 SaveManager:IgnoreThemeSettings()
@@ -795,28 +790,27 @@ SaveManager:SetFolder("Cheat")
 ThemeManager:SetFolder("Cheat")
 SaveManager:BuildConfigSection(Tabs.Config)
 ThemeManager:ApplyToTab(Tabs.Config)
-ConfigGroup:AddButton("Unload UI", function() Library:Unload(); fovCircle:Remove() end)
+ConfigGroup:AddButton("Выгрузить чит", function() Library:Unload(); fovCircle:Remove() end)
 
--- Set green theme
 Library.AccentColor = Color3.fromRGB(0, 255, 100)
 Library.AccentColorDark = Color3.fromRGB(0, 200, 80)
 Library.OutlineColor = Color3.fromRGB(0, 255, 100)
 Library:UpdateColorsUsingRegistry()
 
--- Watermark
 Library:SetWatermarkVisibility(true)
 local fps, lastTick = 0, tick()
 RunService.RenderStepped:Connect(function()
     fps = fps + 1
     if tick() - lastTick >= 1 then
         local ping = math.floor(game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue())
-        Library:SetWatermark(string.format("FPS: %d | Ping: %dms | Cheat", fps, ping))
+        Library:SetWatermark(string.format("FPS: %d | Пинг: %dms | Cheat", fps, ping))
         fps, lastTick = 0, tick()
     end
 end)
 
 Library.KeybindFrame.Visible = true
-Library:OnUnload(function() print("Cheat unloaded!") end)
+Library:OnUnload(function() print("Cheat выгружен!") end)
 SaveManager:LoadAutoloadConfig()
 
-print("Cheat Universal Loaded!")
+StarterGui:SetCore("SendNotification", {Title = "Cheat", Text = "Успешно загружен!", Duration = 5})
+print("Cheat Universal загружен!")
