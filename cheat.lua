@@ -573,7 +573,8 @@ local Window = Library:CreateWindow({
     Center = true,
     AutoShow = true,
     TabPadding = 8,
-    MenuFadeTime = 0.2
+    MenuFadeTime = 0.2,
+    AccentColor = Color3.fromRGB(0, 255, 100)
 })
 
 local Tabs = {
@@ -678,6 +679,12 @@ ThemeManager:SetFolder("Cheat")
 SaveManager:BuildConfigSection(Tabs.Config)
 ThemeManager:ApplyToTab(Tabs.Config)
 ConfigGroup:AddButton("Unload UI", function() Library:Unload(); fovCircle:Remove() end)
+
+-- Set green theme
+Library.AccentColor = Color3.fromRGB(0, 255, 100)
+Library.AccentColorDark = Color3.fromRGB(0, 200, 80)
+Library.OutlineColor = Color3.fromRGB(0, 255, 100)
+Library:UpdateColorsUsingRegistry()
 
 -- Watermark
 Library:SetWatermarkVisibility(true)
