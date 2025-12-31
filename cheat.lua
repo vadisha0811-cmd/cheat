@@ -580,6 +580,7 @@ local Window = Library:CreateWindow({
 local Tabs = {
     Main = Window:AddTab("Misc"),
     Combat = Window:AddTab("Combat"),
+    Players = Window:AddTab("Players"),
     Config = Window:AddTab("Config")
 }
 
@@ -667,6 +668,122 @@ CombatLeft:AddDropdown("KeybindDropdown", {Values = keybindOptions, Default = "M
     for _, key in pairs(Enum.KeyCode:GetEnumItems()) do if key.Name == v then Config.ActivationKey = key; return end end
     for _, key in pairs(Enum.UserInputType:GetEnumItems()) do if key.Name == v then Config.ActivationKey = key; return end end
 end})
+
+-- ═══════════════════════════════════════════════════════════════
+-- PLAYERS TAB
+-- ═══════════════════════════════════════════════════════════════
+local PlayersLeft = Tabs.Players:AddLeftGroupbox("Player List")
+local PlayersRight = Tabs.Players:AddRightGroupbox("Player Actions")
+
+local selectedPlayer = nil
+local playerNames = {}
+
+local function updatePlayerList()
+    playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    if Options and Options.PlayerDropdown then
+        Options.PlayerDropdown:SetValues(playerNames)
+    end
+end
+
+PlayersLeft:AddButton("Refresh Player List", function()
+    updatePlayerList()
+    Library:Notify("Player list refreshed! (" .. #playerNames .. " players)")
+end)
+
+PlayersLeft:AddButton("Show All Players", function()
+    local playerList = "Players on server:\n"
+    for i, player in ipairs(Players:GetPlayers()) do
+        local displayName = player.DisplayName ~= player.Name and " (" .. player.DisplayName .. ")" or ""
+        playerList = playerList .. i .. ". " .. player.Name .. displayName .. "\n"
+    end
+    Library:Notify(playerList, 10)
+end)
+
+PlayersLeft:AddDropdown("PlayerDropdown", {
+    Values = playerNames,
+    Default = nil,
+    Text = "Select Player",
+    Callback = function(v)
+        selectedPlayer = Players:FindFirstChild(v)
+        if selectedPlayer then
+            Library:Notify("Selected: " .. v)
+        end
+    end
+})
+
+PlayersRight:AddButton("Spectate Player", function()
+    if selectedPlayer and selectedPlayer.Character then
+        local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            Camera.CameraSubject = selectedPlayer.Character:FindFirstChildOfClass("Humanoid")
+            Library:Notify("Spectating: " .. selectedPlayer.Name)
+        end
+    else
+        Library:Notify("No player selected!")
+    end
+end)
+
+PlayersRight:AddButton("Unspectate", function()
+    if LocalPlayer.Character then
+        Camera.CameraSubject = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        Library:Notify("Stopped spectating")
+    end
+end)
+
+PlayersRight:AddButton("Teleport To Player", function()
+    if selectedPlayer and selectedPlayer.Character and LocalPlayer.Character then
+        local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if targetHRP and myHRP then
+            myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
+            Library:Notify("Teleported to: " .. selectedPlayer.Name)
+        end
+    else
+        Library:Notify("No player selected or character not found!")
+    end
+end)
+
+PlayersRight:AddButton("Copy Player Name", function()
+    if selectedPlayer then
+        if setclipboard then
+            setclipboard(selectedPlayer.Name)
+            Library:Notify("Copied: " .. selectedPlayer.Name)
+        else
+            Library:Notify("Clipboard not supported!")
+        end
+    else
+        Library:Notify("No player selected!")
+    end
+end)
+
+PlayersRight:AddButton("View Player Info", function()
+    if selectedPlayer then
+        local info = "Player Info:\n"
+        info = info .. "Name: " .. selectedPlayer.Name .. "\n"
+        info = info .. "Display: " .. selectedPlayer.DisplayName .. "\n"
+        info = info .. "UserID: " .. selectedPlayer.UserId .. "\n"
+        info = info .. "Account Age: " .. selectedPlayer.AccountAge .. " days\n"
+        if selectedPlayer.Character then
+            local humanoid = selectedPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                info = info .. "Health: " .. math.floor(humanoid.Health) .. "/" .. humanoid.MaxHealth
+            end
+        end
+        Library:Notify(info, 8)
+    else
+        Library:Notify("No player selected!")
+    end
+end)
+
+-- Auto-update player list
+Players.PlayerAdded:Connect(function() task.wait(1); updatePlayerList() end)
+Players.PlayerRemoving:Connect(function() task.wait(0.5); updatePlayerList() end)
+task.spawn(updatePlayerList)
 
 -- CONFIG TAB
 local ConfigGroup = Tabs.Config:AddLeftGroupbox("Configuration")
