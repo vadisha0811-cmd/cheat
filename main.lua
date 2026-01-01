@@ -1,5 +1,5 @@
 --[[
-    CHEAT v4 - Рабочая версия
+    CHEAT v5 - Полная версия
 ]]
 
 local Players = game:GetService("Players")
@@ -18,7 +18,6 @@ local LP = Players.LocalPlayer
 local Cam = Workspace.CurrentCamera
 local Mouse = LP:GetMouse()
 
--- Защита
 pcall(function()
     local mt = getrawmetatable(game)
     if mt and setreadonly then
@@ -32,32 +31,28 @@ pcall(function()
     end
 end)
 
--- Переменные
 local Settings = {
     ESP = false, Chams = false, Tracers = false, Aimbot = true,
-    Triggerbot = false, IgnoreWalls = false, Fullbright = false,
-    InfJump = false, Noclip = false, Fly = false, Speed = false,
-    Bhop = false, Spin = false, AntiAFK = false, Hitbox = false,
-    CamLock = false, Xray = false, Rainbow = false, FOVCircle = true
+    Triggerbot = false, Fullbright = false, InfJump = false,
+    Noclip = false, Fly = false, Speed = false, Bhop = false,
+    Spin = false, AntiAFK = false, Hitbox = false, CamLock = false,
+    Xray = false, Rainbow = false, FOVCircle = true
 }
 
 local Cfg = {
     FOV = 200, Smooth = 80, Pred = 0.1, WalkSpd = 16, JumpPwr = 50,
-    FlySpd = 50, SpinSpd = 30, HitboxSize = 15, HitVol = 5,
+    FlySpd = 50, SpinSpd = 30, HitboxSize = 15,
     Color = Color3.fromRGB(150, 150, 150)
 }
 
-local ESP_Objects = {}
-local Chams_Objects = {}
-local Tracer_Lines = {}
-local Conns = {}
+local ESP_Obj, Chams_Obj, Tracers, Conns = {}, {}, {}, {}
+local isAiming = false
+local SelectedPlayer = nil
 
--- FOV Circle
 local FOVCircle = Drawing.new("Circle")
 FOVCircle.Thickness = 2
 FOVCircle.Color = Cfg.Color
 FOVCircle.Transparency = 0.5
-FOVCircle.Filled = false
 FOVCircle.Radius = Cfg.FOV
 FOVCircle.Visible = true
 
@@ -88,27 +83,22 @@ local function AimAt(pos)
     if mousemoverel then mousemoverel(dx, dy) end
 end
 
--- ESP
 local function MakeESP(plr)
-    if plr == LP or ESP_Objects[plr] then return end
+    if plr == LP or ESP_Obj[plr] then return end
     local chr = plr.Character
     if not chr then return end
     local hrp = chr:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    
     local bb = Instance.new("BillboardGui")
     bb.Adornee = hrp
     bb.Size = UDim2.new(4, 0, 5, 0)
     bb.AlwaysOnTop = true
-    
     local fr = Instance.new("Frame", bb)
     fr.Size = UDim2.new(1, 0, 1, 0)
     fr.BackgroundTransparency = 1
-    
     local st = Instance.new("UIStroke", fr)
     st.Color = Cfg.Color
     st.Thickness = 2
-    
     local nm = Instance.new("TextLabel", fr)
     nm.Size = UDim2.new(1, 0, 0.2, 0)
     nm.BackgroundTransparency = 1
@@ -116,40 +106,35 @@ local function MakeESP(plr)
     nm.TextColor3 = Cfg.Color
     nm.TextScaled = true
     nm.Font = Enum.Font.SourceSansBold
-    
     bb.Parent = hrp
-    ESP_Objects[plr] = bb
+    ESP_Obj[plr] = bb
 end
 
 local function RemoveESP(plr)
-    if ESP_Objects[plr] then ESP_Objects[plr]:Destroy(); ESP_Objects[plr] = nil end
+    if ESP_Obj[plr] then ESP_Obj[plr]:Destroy(); ESP_Obj[plr] = nil end
 end
 
--- Chams
 local function MakeChams(plr)
-    if plr == LP or Chams_Objects[plr] then return end
+    if plr == LP or Chams_Obj[plr] then return end
     local chr = plr.Character
     if not chr then return end
-    
     local hl = Instance.new("Highlight")
     hl.FillColor = Cfg.Color
     hl.OutlineColor = Cfg.Color
     hl.FillTransparency = 0.5
     hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     hl.Parent = chr
-    Chams_Objects[plr] = hl
+    Chams_Obj[plr] = hl
 end
 
 local function RemoveChams(plr)
-    if Chams_Objects[plr] then Chams_Objects[plr]:Destroy(); Chams_Objects[plr] = nil end
+    if Chams_Obj[plr] then Chams_Obj[plr]:Destroy(); Chams_Obj[plr] = nil end
 end
 
--- Tracers
 local function UpdateTracers()
-    for _, l in pairs(Tracer_Lines) do l:Remove() end
-    Tracer_Lines = {}
+    for _, l in pairs(Tracers) do l:Remove() end
+    Tracers = {}
     if not Settings.Tracers then return end
-    
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LP and p.Character then
             local hrp = p.Character:FindFirstChild("HumanoidRootPart")
@@ -162,14 +147,13 @@ local function UpdateTracers()
                     ln.Color = Cfg.Color
                     ln.Thickness = 1
                     ln.Visible = true
-                    table.insert(Tracer_Lines, ln)
+                    table.insert(Tracers, ln)
                 end
             end
         end
     end
 end
 
--- Movement
 UserInputService.JumpRequest:Connect(function()
     if Settings.InfJump and LP.Character then
         local h = LP.Character:FindFirstChildOfClass("Humanoid")
@@ -194,7 +178,6 @@ local function SetFly(on)
     if Conns.fly then Conns.fly:Disconnect(); Conns.fly = nil end
     if Conns.bv then Conns.bv:Destroy(); Conns.bv = nil end
     if Conns.bg then Conns.bg:Destroy(); Conns.bg = nil end
-    
     if on then
         local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
         if not hrp then return end
@@ -203,7 +186,6 @@ local function SetFly(on)
         Conns.bg = Instance.new("BodyGyro", hrp)
         Conns.bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
         Conns.bg.P = 9e4
-        
         Conns.fly = RunService.RenderStepped:Connect(function()
             local d = Vector3.zero
             if UserInputService:IsKeyDown(Enum.KeyCode.W) then d = d + Cam.CFrame.LookVector end
@@ -277,8 +259,6 @@ local function SetRainbow(on)
 end
 
 -- Main Loop
-local isAiming = false
-
 RunService.RenderStepped:Connect(function()
     local m = UserInputService:GetMouseLocation()
     FOVCircle.Position = Vector2.new(m.X, m.Y)
@@ -288,13 +268,13 @@ RunService.RenderStepped:Connect(function()
     if Settings.ESP then
         for _, p in pairs(Players:GetPlayers()) do if p ~= LP and p.Character then MakeESP(p) end end
     else
-        for p in pairs(ESP_Objects) do RemoveESP(p) end
+        for p in pairs(ESP_Obj) do RemoveESP(p) end
     end
     
     if Settings.Chams then
         for _, p in pairs(Players:GetPlayers()) do if p ~= LP and p.Character then MakeChams(p) end end
     else
-        for p in pairs(Chams_Objects) do RemoveChams(p) end
+        for p in pairs(Chams_Obj) do RemoveChams(p) end
     end
     
     UpdateTracers()
@@ -355,7 +335,7 @@ Players.PlayerRemoving:Connect(function(p) RemoveESP(p); RemoveChams(p) end)
 
 -- UI
 local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/Library.lua"))()
-local Win = Lib:CreateWindow({Title = "Cheat v4", Center = true, AutoShow = true})
+local Win = Lib:CreateWindow({Title = "Cheat v5", Center = true, AutoShow = true})
 
 local T1 = Win:AddTab("Визуалы")
 local T2 = Win:AddTab("Боевые")
@@ -363,69 +343,68 @@ local T3 = Win:AddTab("Движение")
 local T4 = Win:AddTab("Разное")
 local T5 = Win:AddTab("Игроки")
 
--- Визуалы
+-- TAB 1: Визуалы
 local G1L = T1:AddLeftGroupbox("ESP")
 local G1R = T1:AddRightGroupbox("Цвета")
 
-G1L:AddToggle("t1", {Text = "ESP", Default = false, Callback = function(v) Settings.ESP = v end})
-G1L:AddToggle("t2", {Text = "Chams", Default = false, Callback = function(v) Settings.Chams = v end})
-G1L:AddToggle("t3", {Text = "Трейсеры", Default = false, Callback = function(v) Settings.Tracers = v end})
-G1L:AddToggle("t4", {Text = "X-Ray", Default = false, Callback = function(v) Settings.Xray = v; SetXray(v) end})
-G1L:AddToggle("t5", {Text = "FOV круг", Default = true, Callback = function(v) Settings.FOVCircle = v end})
-G1L:AddToggle("t6", {Text = "Fullbright", Default = false, Callback = function(v) Settings.Fullbright = v end})
-G1L:AddToggle("t7", {Text = "Убрать тени", Default = false, Callback = function(v) Lighting.GlobalShadows = not v end})
-G1L:AddToggle("t8", {Text = "Радуга", Default = false, Callback = function(v) Settings.Rainbow = v; SetRainbow(v) end})
+G1L:AddToggle("ESP", {Text = "ESP", Default = false, Callback = function(v) Settings.ESP = v end})
+G1L:AddToggle("Chams", {Text = "Chams", Default = false, Callback = function(v) Settings.Chams = v end})
+G1L:AddToggle("Tracers", {Text = "Трейсеры", Default = false, Callback = function(v) Settings.Tracers = v end})
+G1L:AddToggle("Xray", {Text = "X-Ray", Default = false, Callback = function(v) Settings.Xray = v; SetXray(v) end})
+G1L:AddToggle("FOVCircle", {Text = "FOV круг", Default = true, Callback = function(v) Settings.FOVCircle = v end})
+G1L:AddToggle("Fullbright", {Text = "Fullbright", Default = false, Callback = function(v) Settings.Fullbright = v end})
+G1L:AddToggle("NoShadow", {Text = "Убрать тени", Default = false, Callback = function(v) Lighting.GlobalShadows = not v end})
+G1L:AddToggle("Rainbow", {Text = "Радуга", Default = false, Callback = function(v) Settings.Rainbow = v; SetRainbow(v) end})
 
-G1R:AddLabel("Цвет"):AddColorPicker("c1", {Default = Color3.fromRGB(150,150,150), Callback = function(v) Cfg.Color = v; FOVCircle.Color = v end})
-G1R:AddToggle("t9", {Text = "FPS Буст", Default = false, Callback = function(v)
+G1R:AddLabel("Цвет"):AddColorPicker("MainColor", {Default = Color3.fromRGB(150,150,150), Callback = function(v) Cfg.Color = v; FOVCircle.Color = v end})
+G1R:AddToggle("FPSBoost", {Text = "FPS Буст", Default = false, Callback = function(v)
     if v then Workspace.Terrain.WaterWaveSize = 0; Lighting.FogEnd = 9e9; settings().Rendering.QualityLevel = "Level01" end
 end})
 
--- Боевые
+-- TAB 2: Боевые
 local G2L = T2:AddLeftGroupbox("Аимбот")
 local G2R = T2:AddRightGroupbox("Доп.")
 
-G2L:AddToggle("t10", {Text = "Аимбот", Default = true, Callback = function(v) Settings.Aimbot = v end})
-G2L:AddToggle("t11", {Text = "Camera Lock", Default = false, Callback = function(v) Settings.CamLock = v end})
-G2L:AddToggle("t12", {Text = "Триггербот", Default = false, Callback = function(v) Settings.Triggerbot = v end})
-G2L:AddToggle("t13", {Text = "Игнор стен", Default = false, Callback = function(v) Settings.IgnoreWalls = v end})
-G2L:AddSlider("s1", {Text = "FOV", Default = 200, Min = 50, Max = 600, Rounding = 0, Callback = function(v) Cfg.FOV = v end})
-G2L:AddSlider("s2", {Text = "Плавность", Default = 80, Min = 1, Max = 200, Rounding = 0, Callback = function(v) Cfg.Smooth = v end})
-G2L:AddSlider("s3", {Text = "Предикшн", Default = 0.1, Min = 0, Max = 1, Rounding = 2, Callback = function(v) Cfg.Pred = v end})
+G2L:AddToggle("Aimbot", {Text = "Аимбот", Default = true, Callback = function(v) Settings.Aimbot = v end})
+G2L:AddToggle("CamLock", {Text = "Camera Lock", Default = false, Callback = function(v) Settings.CamLock = v end})
+G2L:AddToggle("Triggerbot", {Text = "Триггербот", Default = false, Callback = function(v) Settings.Triggerbot = v end})
+G2L:AddSlider("FOVSlider", {Text = "FOV", Default = 200, Min = 50, Max = 600, Rounding = 0, Callback = function(v) Cfg.FOV = v end})
+G2L:AddSlider("SmoothSlider", {Text = "Плавность", Default = 80, Min = 1, Max = 200, Rounding = 0, Callback = function(v) Cfg.Smooth = v end})
+G2L:AddSlider("PredSlider", {Text = "Предикшн", Default = 0.1, Min = 0, Max = 1, Rounding = 2, Callback = function(v) Cfg.Pred = v end})
 
-G2R:AddToggle("t14", {Text = "Расширить хитбоксы", Default = false, Callback = function(v) Settings.Hitbox = v; if not v then SetHitbox(false) end end})
-G2R:AddSlider("s4", {Text = "Размер хитбокса", Default = 15, Min = 5, Max = 30, Rounding = 0, Callback = function(v) Cfg.HitboxSize = v end})
+G2R:AddToggle("Hitbox", {Text = "Расширить хитбоксы", Default = false, Callback = function(v) Settings.Hitbox = v; if not v then SetHitbox(false) end end})
+G2R:AddSlider("HitboxSize", {Text = "Размер хитбокса", Default = 15, Min = 5, Max = 30, Rounding = 0, Callback = function(v) Cfg.HitboxSize = v end})
 
--- Движение
+-- TAB 3: Движение
 local G3L = T3:AddLeftGroupbox("Движение")
 local G3R = T3:AddRightGroupbox("Настройки")
 
-G3L:AddToggle("t15", {Text = "Бесконечный прыжок", Default = false, Callback = function(v) Settings.InfJump = v end})
-G3L:AddToggle("t16", {Text = "Ноклип", Default = false, Callback = function(v) Settings.Noclip = v; SetNoclip(v) end})
-G3L:AddToggle("t17", {Text = "Полёт", Default = false, Callback = function(v) Settings.Fly = v; SetFly(v) end})
-G3L:AddToggle("t18", {Text = "Спидхак", Default = false, Callback = function(v) Settings.Speed = v end})
-G3L:AddToggle("t19", {Text = "Банихоп", Default = false, Callback = function(v) Settings.Bhop = v; SetBhop(v) end})
-G3L:AddToggle("t20", {Text = "Спинбот", Default = false, Callback = function(v) Settings.Spin = v; SetSpin(v) end})
+G3L:AddToggle("InfJump", {Text = "Бесконечный прыжок", Default = false, Callback = function(v) Settings.InfJump = v end})
+G3L:AddToggle("Noclip", {Text = "Ноклип", Default = false, Callback = function(v) Settings.Noclip = v; SetNoclip(v) end})
+G3L:AddToggle("Fly", {Text = "Полёт", Default = false, Callback = function(v) Settings.Fly = v; SetFly(v) end})
+G3L:AddToggle("Speed", {Text = "Спидхак", Default = false, Callback = function(v) Settings.Speed = v end})
+G3L:AddToggle("Bhop", {Text = "Банихоп", Default = false, Callback = function(v) Settings.Bhop = v; SetBhop(v) end})
+G3L:AddToggle("Spin", {Text = "Спинбот", Default = false, Callback = function(v) Settings.Spin = v; SetSpin(v) end})
 
-G3R:AddSlider("s5", {Text = "Скорость", Default = 16, Min = 16, Max = 200, Rounding = 0, Callback = function(v) Cfg.WalkSpd = v end})
-G3R:AddSlider("s6", {Text = "Прыжок", Default = 50, Min = 50, Max = 200, Rounding = 0, Callback = function(v) Cfg.JumpPwr = v end})
-G3R:AddSlider("s7", {Text = "Скорость полёта", Default = 50, Min = 10, Max = 200, Rounding = 0, Callback = function(v) Cfg.FlySpd = v end})
-G3R:AddSlider("s8", {Text = "Скорость вращения", Default = 30, Min = 5, Max = 60, Rounding = 0, Callback = function(v) Cfg.SpinSpd = v end})
+G3R:AddSlider("WalkSpd", {Text = "Скорость", Default = 16, Min = 16, Max = 200, Rounding = 0, Callback = function(v) Cfg.WalkSpd = v end})
+G3R:AddSlider("JumpPwr", {Text = "Прыжок", Default = 50, Min = 50, Max = 200, Rounding = 0, Callback = function(v) Cfg.JumpPwr = v end})
+G3R:AddSlider("FlySpd", {Text = "Скорость полёта", Default = 50, Min = 10, Max = 200, Rounding = 0, Callback = function(v) Cfg.FlySpd = v end})
+G3R:AddSlider("SpinSpd", {Text = "Скорость вращения", Default = 30, Min = 5, Max = 60, Rounding = 0, Callback = function(v) Cfg.SpinSpd = v end})
 
--- Разное
+-- TAB 4: Разное
 local G4L = T4:AddLeftGroupbox("Утилиты")
 local G4R = T4:AddRightGroupbox("Сервер")
 
-G4L:AddToggle("t21", {Text = "Анти-АФК", Default = false, Callback = function(v) Settings.AntiAFK = v; SetAFK(v) end})
-G4L:AddButton("Респавн", function() if LP.Character then LP.Character:BreakJoints() end end)
-G4L:AddButton("Сбросить скорость", function()
+G4L:AddToggle("AntiAFK", {Text = "Анти-АФК", Default = false, Callback = function(v) Settings.AntiAFK = v; SetAFK(v) end})
+G4L:AddButton({Text = "Респавн", Func = function() if LP.Character then LP.Character:BreakJoints() end end})
+G4L:AddButton({Text = "Сбросить скорость", Func = function()
     local h = LP.Character and LP.Character:FindFirstChildOfClass("Humanoid")
     if h then h.WalkSpeed = 16; h.JumpPower = 50 end
     Lib:Notify("Сброшено!")
-end)
+end})
 
-G4R:AddButton("Переподключиться", function() TeleportService:Teleport(game.PlaceId, LP) end)
-G4R:AddButton("Сменить сервер", function()
+G4R:AddButton({Text = "Переподключиться", Func = function() TeleportService:Teleport(game.PlaceId, LP) end})
+G4R:AddButton({Text = "Сменить сервер", Func = function()
     pcall(function()
         local s = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"))
         for _, sv in pairs(s.data) do
@@ -435,44 +414,110 @@ G4R:AddButton("Сменить сервер", function()
             end
         end
     end)
-end)
+end})
 
--- Игроки
+-- TAB 5: Игроки
 local G5L = T5:AddLeftGroupbox("Список")
 local G5R = T5:AddRightGroupbox("Действия")
 
-local selP = nil
-local pList = {}
-
-local function UpdList()
-    pList = {}
-    for _, p in pairs(Players:GetPlayers()) do if p ~= LP then table.insert(pList, p.Name) end end
-    if Options and Options.dp then Options.dp:SetValues(pList) end
-end
-
-G5L:AddButton("Обновить", function() UpdList(); Lib:Notify("Обновлено!") end)
-G5L:AddDropdown("dp", {Values = pList, Text = "Игрок", Callback = function(v) selP = Players:FindFirstChild(v) end})
-
-G5R:AddButton("Наблюдать", function()
-    if selP and selP.Character then Cam.CameraSubject = selP.Character:FindFirstChildOfClass("Humanoid"); Lib:Notify("Наблюдаем") end
-end)
-G5R:AddButton("Перестать", function()
-    if LP.Character then Cam.CameraSubject = LP.Character:FindFirstChildOfClass("Humanoid") end
-end)
-G5R:AddButton("Телепорт", function()
-    if selP and selP.Character and LP.Character then
-        local t = selP.Character:FindFirstChild("HumanoidRootPart")
-        local m = LP.Character:FindFirstChild("HumanoidRootPart")
-        if t and m then m.CFrame = t.CFrame * CFrame.new(0,0,3); Lib:Notify("ТП!") end
+G5L:AddButton({Text = "Обновить список", Func = function()
+    local names = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LP then table.insert(names, p.Name) end
     end
-end)
-G5R:AddButton("Копировать ник", function()
-    if selP and setclipboard then setclipboard(selP.Name); Lib:Notify("Скопировано!") end
+    if Options and Options.PlayerList then
+        Options.PlayerList:SetValues(names)
+    end
+    Lib:Notify("Обновлено! ("..#names.." игроков)")
+end})
+
+G5L:AddDropdown("PlayerList", {
+    Values = {},
+    Default = nil,
+    Text = "Выбрать игрока",
+    Callback = function(v)
+        SelectedPlayer = Players:FindFirstChild(v)
+        if SelectedPlayer then Lib:Notify("Выбран: "..v) end
+    end
+})
+
+G5R:AddButton({Text = "Наблюдать", Func = function()
+    if SelectedPlayer and SelectedPlayer.Character then
+        Cam.CameraSubject = SelectedPlayer.Character:FindFirstChildOfClass("Humanoid")
+        Lib:Notify("Наблюдаем: "..SelectedPlayer.Name)
+    else
+        Lib:Notify("Сначала выбери игрока!")
+    end
+end})
+
+G5R:AddButton({Text = "Перестать наблюдать", Func = function()
+    if LP.Character then
+        Cam.CameraSubject = LP.Character:FindFirstChildOfClass("Humanoid")
+        Lib:Notify("Остановлено")
+    end
+end})
+
+G5R:AddButton({Text = "Телепорт к игроку", Func = function()
+    if SelectedPlayer and SelectedPlayer.Character and LP.Character then
+        local t = SelectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local m = LP.Character:FindFirstChild("HumanoidRootPart")
+        if t and m then
+            m.CFrame = t.CFrame * CFrame.new(0, 0, 3)
+            Lib:Notify("Телепорт к: "..SelectedPlayer.Name)
+        end
+    else
+        Lib:Notify("Сначала выбери игрока!")
+    end
+end})
+
+G5R:AddButton({Text = "Копировать ник", Func = function()
+    if SelectedPlayer then
+        if setclipboard then
+            setclipboard(SelectedPlayer.Name)
+            Lib:Notify("Скопировано: "..SelectedPlayer.Name)
+        end
+    else
+        Lib:Notify("Сначала выбери игрока!")
+    end
+end})
+
+G5R:AddButton({Text = "Инфо об игроке", Func = function()
+    if SelectedPlayer then
+        local info = "Ник: "..SelectedPlayer.Name.."\nID: "..SelectedPlayer.UserId.."\nВозраст: "..SelectedPlayer.AccountAge.." дней"
+        Lib:Notify(info, 5)
+    else
+        Lib:Notify("Сначала выбери игрока!")
+    end
+end})
+
+-- Авто-обновление списка
+Players.PlayerAdded:Connect(function()
+    task.wait(1)
+    local names = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LP then table.insert(names, p.Name) end
+    end
+    if Options and Options.PlayerList then Options.PlayerList:SetValues(names) end
 end)
 
-Players.PlayerAdded:Connect(function() task.wait(1); UpdList() end)
-Players.PlayerRemoving:Connect(function() task.wait(0.5); UpdList() end)
-task.spawn(UpdList)
+Players.PlayerRemoving:Connect(function()
+    task.wait(0.5)
+    local names = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LP then table.insert(names, p.Name) end
+    end
+    if Options and Options.PlayerList then Options.PlayerList:SetValues(names) end
+end)
+
+-- Инициализация списка
+task.spawn(function()
+    task.wait(1)
+    local names = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LP then table.insert(names, p.Name) end
+    end
+    if Options and Options.PlayerList then Options.PlayerList:SetValues(names) end
+end)
 
 -- Тема
 Lib.AccentColor = Color3.fromRGB(150, 150, 150)
@@ -486,11 +531,11 @@ RunService.RenderStepped:Connect(function()
     fps = fps + 1
     if tick() - lt >= 1 then
         local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
-        Lib:SetWatermark(string.format("Cheat v4 | FPS: %d | Пинг: %dms", fps, ping))
+        Lib:SetWatermark(string.format("Cheat v5 | FPS: %d | Пинг: %dms", fps, ping))
         fps, lt = 0, tick()
     end
 end)
 
 Lib.KeybindFrame.Visible = true
-StarterGui:SetCore("SendNotification", {Title = "Cheat", Text = "Загружен!", Duration = 3})
-print("Cheat v4 загружен!")
+StarterGui:SetCore("SendNotification", {Title = "Cheat v5", Text = "Загружен!", Duration = 3})
+print("Cheat v5 загружен!")
